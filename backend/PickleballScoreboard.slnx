@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="PickleballApi/PickleballApi.csproj" />
+  <Project Path="PickleballScoreboard.Tests/PickleballScoreboard.Tests.csproj" />
+</Solution>
