@@ -16,7 +16,7 @@ namespace PickleballApi.Services
             return Task.FromResult(_currentGame);
         }
 
-        public Task<GameState> StartNeGameAsync(GameType gametype)
+        public Task<GameState> StartNewGameAsync(GameType gametype)
         {
             if (_currentGame != null && !_currentGame.IsGameComplete)
             {

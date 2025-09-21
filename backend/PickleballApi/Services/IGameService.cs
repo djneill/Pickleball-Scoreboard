@@ -21,7 +21,7 @@ public interface IGameService
     /// </summary
     /// <param name="gameType">Singles or Doubles</param>
     /// <returns>The newly created game</returns>
-    Task<GameState> StartNeGameAsync(GameType gametype);
+    Task<GameState> StartNewGameAsync(GameType gametype);
 
     /// <summary>
     /// Update the score for a team
