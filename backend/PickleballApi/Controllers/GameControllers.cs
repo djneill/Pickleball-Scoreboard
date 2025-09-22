@@ -7,17 +7,17 @@ using Microsoft.AspNetCore.Mvc;
 using PickleballApi.Models;
 using PickleballApi.Services;
 
-namespace PickleballApi.Controller;
+namespace PickleballApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 public class GameController : ControllerBase
 {
-    private readonly IGameService _gameservice;
+    private readonly IGameService _gameService;
 
     public GameController(IGameService gameService)
     {
-        _gameservice = gameService;
+        _gameService = gameService;
     }
 
     /// <summary>
@@ -26,7 +26,7 @@ public class GameController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<GameState>> GetCurrentGame()
     {
-        var game = await _gameservice.GetCurrentGameAsync();
+        var game = await _gameService.GetCurrentGameAsync();
 
         if (game == null)
         {
@@ -42,8 +42,15 @@ public class GameController : ControllerBase
     [HttpPost("new")]
     public async Task<ActionResult<GameState>> StartNewGame([FromBody] NewGameRequest request)
     {
-        var game = await _gameservice.StartNewGameAsync(request.GameType);
-        return CreatedAtAction(nameof(GetCurrentGame), new { id = game.Id }, game);
+        if (request == null)
+        {
+            return BadRequest("Request body is required");
+        }
+
+        var game = await _gameService.StartNewGameAsync(request.GameType);
+        return Ok(game);
+        //     return CreatedAtAction(nameof(GetCurrentGame), new { id = game.Id }, game);
+
     }
 
     /// <summary>
@@ -54,7 +61,7 @@ public class GameController : ControllerBase
     {
         try
         {
-            var game = await _gameservice.UpdateScoreAsync(request.Team, request.Change);
+            var game = await _gameService.UpdateScoreAsync(request.Team, request.Change);
             return Ok(game);
         }
         catch (InvalidOperationException ex)
@@ -73,7 +80,7 @@ public class GameController : ControllerBase
     [HttpGet("stats")]
     public async Task<ActionResult<GameStatsResponse>> GetGameStats()
     {
-        var stats = await _gameservice.GetGameStatsAsync();
+        var stats = await _gameService.GetGameStatsAsync();
         return Ok(stats);
     }
 }
