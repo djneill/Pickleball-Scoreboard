@@ -37,7 +37,7 @@ jobs:
 
       - name: Build frontend
         env:
-          VITE_API_URL: https://pickleball-scoreboard-api-gygycwa2c2hpgabr.centralus-01.azurewebsites.net/api/
+          VITE_API_URL: https://pickleball-scoreboard-api-gygycwa2c2hpgabr.centralus-01.azurewebsites.net
         run: |
           cd frontend
           npm run build
