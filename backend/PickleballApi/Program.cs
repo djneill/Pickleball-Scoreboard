@@ -15,12 +15,14 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("Development", policy =>
+    options.AddDefaultPolicy(policy =>
     {
-        // policy.WithOrigins("http://loclahost:5173")
-        policy.AllowAnyOrigin()
-            .AllowAnyHeader()
-            .AllowAnyMethod();
+        policy.WithOrigins(
+            "http://localhost:5173",  // Development
+            "https://polite-tree-07cef7510.2.azurestaticapps.net"  // Production
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod();
     });
 });
 
