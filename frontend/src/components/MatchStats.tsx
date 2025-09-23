@@ -8,7 +8,7 @@ interface MatchStatsProps {
 
 export default function MatchStats({ game, onClearStats }: MatchStatsProps) {
   return (
-    <div className="bg-white/90 backdrop-blur-sm rounded-xl p-6 mb-6 shadow-lg">
+    <div className="bg-white/50 backdrop-blur-sm rounded-xl p-6 mb-6 shadow-lg">
       <h3 className="text-lg font-semibold text-gray-800 mb-3 text-center">
         Match Stats
       </h3>

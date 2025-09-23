@@ -64,10 +64,9 @@ export default function PickleballScoreboard() {
     ) {
       try {
         setError(null);
-        if (game) {
-          const newGame = await gameApi.startNewGame(game.gameType);
-          setGame(newGame);
-        }
+        await gameApi.clearStats(); // Use new endpoint
+        // Reload current game to get updated stats
+        await loadCurrentGame();
       } catch (err) {
         setError("Failed to clear statistics");
         console.error("Error clearing stats:", err);
@@ -75,13 +74,26 @@ export default function PickleballScoreboard() {
     }
   };
 
+  const backgroundStyle = {
+    backgroundImage: game
+      ? 'url("/PBcourtBackground.png")'
+      : 'url("/pickle-ball-landing.png")',
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-400 via-blue-500 to-purple-600 p-4">
+    <div
+      className="min-h-screen bg-gradient-to-br from-green-400 via-blue-500 to-purple-600 p-4"
+      style={backgroundStyle}
+    >
       <div className="max-w-md mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">🏓</h1>
-          <h1 className="text-3xl font-bold text-white">Pickleball Score</h1>
+          <h1 className="text-3xl font-bold text-white">
+            Pickleball Scoreboard
+          </h1>
         </div>
 
         <ErrorMessage error={error} onDismiss={() => setError(null)} />
@@ -101,7 +113,7 @@ export default function PickleballScoreboard() {
             <GameInfo game={game} />
 
             {/* Scoreboard */}
-            <div className="bg-white/90 backdrop-blur-sm rounded-xl p-6 mb-6 shadow-lg">
+            <div className="bg-white/50 backdrop-blur-sm rounded-xl p-2 mb-6 shadow-lg">
               <div className="grid grid-cols-2 gap-6">
                 <TeamScore
                   teamName="Home"

@@ -78,4 +78,9 @@ export const gameApi = {
     const response = await apiClient.get<GameStatsResponse>("/game/stats");
     return response.data;
   },
+
+  clearStats: async (): Promise<GameStatsResponse> => {
+    const response = await apiClient.delete<GameStatsResponse>("/game/stats");
+    return response.data;
+  },
 };

@@ -8,24 +8,24 @@ export default function GameTypeSelection({
   isLoading,
 }: GameTypeSelectionProps) {
   return (
-    <div className="bg-white/90 backdrop-blur-sm rounded-xl p-6 mb-6 shadow-lg">
-      <h2 className="text-xl font-semibold text-gray-800 mb-4 text-center">
+    <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-8 shadow-xl max-w-sm mx-auto">
+      <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
         Choose Game Type
       </h2>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="space-y-4">
         <button
           onClick={() => onSelectGameType("Singles")}
           disabled={isLoading}
-          className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white font-bold py-4 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 disabled:cursor-not-allowed"
+          className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white font-bold py-4 px-6 rounded-xl text-lg transition-all duration-200 transform hover:scale-105 disabled:cursor-not-allowed"
         >
-          Singles
+          Singles Game
         </button>
         <button
           onClick={() => onSelectGameType("Doubles")}
           disabled={isLoading}
-          className="bg-purple-500 hover:bg-purple-600 disabled:bg-gray-300 text-white font-bold py-4 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 disabled:cursor-not-allowed"
+          className="w-full bg-purple-500 hover:bg-purple-600 disabled:bg-gray-300 text-white font-bold py-4 px-6 rounded-xl text-lg transition-all duration-200 transform hover:scale-105 disabled:cursor-not-allowed"
         >
-          Doubles
+          Doubles Game
         </button>
       </div>
     </div>

@@ -37,4 +37,9 @@ public interface IGameService
     /// Get overall game statistics including win counts
     /// </summary>
     Task<GameStatsResponse> GetGameStatsAsync();
+
+    /// <summary>
+    /// Clear all match statistics and reset win counts
+    /// </summary>
+    Task ClearStatsAsync();
 }

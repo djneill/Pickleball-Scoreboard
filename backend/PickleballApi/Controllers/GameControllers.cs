@@ -83,4 +83,22 @@ public class GameController : ControllerBase
         var stats = await _gameService.GetGameStatsAsync();
         return Ok(stats);
     }
+
+    /// <summary>
+    /// Clear all match stats
+    /// </summary>
+    [HttpDelete("stats")]
+    public async Task<ActionResult<GameStatsResponse>> ClearStats()
+    {
+        try
+        {
+            await _gameService.ClearStatsAsync();
+            var stats = await _gameService.GetGameStatsAsync();
+            return Ok(stats);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest($"Failed to clear statistics: {ex.Message}");
+        }
+    }
 }
