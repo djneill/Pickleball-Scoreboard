@@ -33,8 +33,10 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    app.UseCors("Development");
+    // app.UseCors("Development");
 }
+
+app.UseCors();
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
