@@ -118,15 +118,9 @@ namespace PickleballApi.Services
         }
         public Task ClearStatsAsync()
         {
-            // Clear the game history (which tracks wins)
             _gameHistory.Clear();
 
-            // Reset current game win counts if there's an active game
-            if (_currentGame != null)
-            {
-                _currentGame.HomeWins = 0;
-                _currentGame.AwayWins = 0;
-            }
+            _currentGame = null;
 
             return Task.CompletedTask;
         }

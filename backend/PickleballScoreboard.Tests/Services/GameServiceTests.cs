@@ -293,4 +293,51 @@ public class GameServiceTests
     {
         await BuildScoresSafely(homeScore, awayScore);
     }
+
+    [Fact]
+    public async Task ClearStatsAsync_WithExistingGames_ResetsWinCounts()
+    {
+        // Arrange - Play some games to build up stats
+
+        // Game 1: Home wins 11-9
+        await _gameService.StartNewGameAsync(GameType.Singles);
+        await BuildScoresSafely(11, 9);
+
+        // Game 2: Away wins 11-8
+        await _gameService.StartNewGameAsync(GameType.Doubles);
+        await BuildScoresSafely(8, 11);
+
+        // Game 3: Home wins 11-7
+        await _gameService.StartNewGameAsync(GameType.Singles);
+        await BuildScoresSafely(11, 7);
+
+        // Verify stats before clearing
+        var statsBeforeClear = await _gameService.GetGameStatsAsync();
+        statsBeforeClear.TotalGamesPlayed.Should().Be(3);
+        statsBeforeClear.HomeWins.Should().Be(2);
+        statsBeforeClear.AwayWins.Should().Be(1);
+
+        // Act
+        await _gameService.ClearStatsAsync();
+
+        // Assert
+        var statsAfterClear = await _gameService.GetGameStatsAsync();
+        statsAfterClear.TotalGamesPlayed.Should().Be(0);
+        statsAfterClear.HomeWins.Should().Be(0);
+        statsAfterClear.AwayWins.Should().Be(0);
+        statsAfterClear.CurrentGame.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ClearStatsAsync_WithNoGames_DoesNotThrow()
+    {
+        // Act & Assert - Should not throw when no games exist
+        var act = async () => await _gameService.ClearStatsAsync();
+        await act.Should().NotThrowAsync();
+
+        var stats = await _gameService.GetGameStatsAsync();
+        stats.TotalGamesPlayed.Should().Be(0);
+        stats.HomeWins.Should().Be(0);
+        stats.AwayWins.Should().Be(0);
+    }
 }
