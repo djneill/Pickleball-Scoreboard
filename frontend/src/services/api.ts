@@ -28,7 +28,7 @@ export interface GameStatsResponse {
   currentGame?: GameState;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5284";
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 // Debug: Check if environment variable is loaded
 // console.log("VITE_API_URL:", import.meta.env.VITE_API_URL);
