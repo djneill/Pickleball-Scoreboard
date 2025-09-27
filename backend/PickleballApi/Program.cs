@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.Options;
 using PickleballApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,6 +34,10 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseSwaggerUI(Options =>
+{
+    Options.SwaggerEndpoint("/openapi/v1.json", "swaggerVersion");
+});
     // app.UseCors("Development");
 }
 
