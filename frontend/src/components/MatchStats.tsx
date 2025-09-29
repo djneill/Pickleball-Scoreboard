@@ -17,13 +17,13 @@ export default function MatchStats({ game, onClearStats }: MatchStatsProps) {
           <div className="text-2xl font-bold text-blue-600">
             {game.homeWins}
           </div>
-          <div className="text-sm text-gray-600">Home Wins</div>
+          <div className="text-sm text-gray-600">Your Wins</div>
         </div>
         <div>
           <div className="text-2xl font-bold text-purple-600">
             {game.awayWins}
           </div>
-          <div className="text-sm text-gray-600">Away Wins</div>
+          <div className="text-sm text-gray-600">Opponent Wins</div>
         </div>
       </div>
       {(game.homeWins > 0 || game.awayWins > 0) && (

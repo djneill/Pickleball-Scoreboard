@@ -79,3 +79,4 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_POLITE_TREE_07CEF7510 }}
           action: "close"
+          app_location: "./frontend" # App source code path

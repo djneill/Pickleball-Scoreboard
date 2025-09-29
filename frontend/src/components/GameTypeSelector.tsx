@@ -8,7 +8,7 @@ export default function GameTypeSelection({
   isLoading,
 }: GameTypeSelectionProps) {
   return (
-    <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-8 shadow-xl max-w-sm mx-auto">
+    <div className="bg-white/65 backdrop-blur-sm rounded-2xl p-6 shadow-xl max-w-sm mx-auto">
       <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
         Choose Game Type
       </h2>

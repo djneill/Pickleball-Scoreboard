@@ -64,8 +64,7 @@ export default function PickleballScoreboard() {
     ) {
       try {
         setError(null);
-        await gameApi.clearStats(); // Use new endpoint
-        // Reload current game to get updated stats
+        await gameApi.clearStats();
         await loadCurrentGame();
       } catch (err) {
         setError("Failed to clear statistics");
@@ -78,9 +77,9 @@ export default function PickleballScoreboard() {
     backgroundImage: game
       ? 'url("/PBcourtBackground.png")'
       : 'url("/pickle-ball-landing.png")',
-    backgroundSize: "cover",
-    backgroundPosition: "center",
     backgroundRepeat: "no-repeat",
+    backgroundColor: "#178BFB",
+    backgroundPosition: "center",
   };
 
   return (
@@ -90,15 +89,16 @@ export default function PickleballScoreboard() {
     >
       <div className="max-w-md mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white">
-            Pickleball Scoreboard
-          </h1>
-        </div>
+        {!game && (
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-white">
+              Pickleball Scoreboard
+            </h1>
+          </div>
+        )}
 
         <ErrorMessage error={error} onDismiss={() => setError(null)} />
         <LoadingSpinner isLoading={isLoading} />
-
         {/* Game Type Selection */}
         {!game && !isLoading && (
           <GameTypeSelector
@@ -106,7 +106,6 @@ export default function PickleballScoreboard() {
             isLoading={isLoading}
           />
         )}
-
         {/* Active Game */}
         {game && (
           <>
@@ -116,7 +115,7 @@ export default function PickleballScoreboard() {
             <div className="bg-white/50 backdrop-blur-sm rounded-xl p-2 mb-6 shadow-lg">
               <div className="grid grid-cols-2 gap-6">
                 <TeamScore
-                  teamName="Home"
+                  teamName="You"
                   score={game.homeScore}
                   color="text-blue-600"
                   onScoreChange={(change) => updateScore("Home", change)}
@@ -124,7 +123,7 @@ export default function PickleballScoreboard() {
                   canDecrement={game.homeScore > 0}
                 />
                 <TeamScore
-                  teamName="Away"
+                  teamName="Opponent"
                   score={game.awayScore}
                   color="text-purple-600"
                   onScoreChange={(change) => updateScore("Away", change)}
