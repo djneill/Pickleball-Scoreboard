@@ -28,9 +28,7 @@ export interface GameStatsResponse {
   currentGame?: GameState;
 }
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL ||
-  "https://pickleball-scoreboard-api-gygycwa2c2hpgabr.centralus-01.azurewebsites.net";
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 const apiClient = axios.create({
   baseURL: `${API_BASE_URL}/api`,
