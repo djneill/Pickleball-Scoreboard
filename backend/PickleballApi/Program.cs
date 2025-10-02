@@ -12,7 +12,26 @@ using PickleballApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var supabaseConnection = builder.Configuration.GetConnectionString("SupabaseConnection");
+
+if (builder.Environment.EnvironmentName == "Testing")
+{
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseInMemoryDatabase("TestDatabase"));
+}
+else if (builder.Environment.IsProduction() && !string.IsNullOrEmpty(supabaseConnection))
+{
+    // Production: Use Supabase PostgreSQL
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseNpgsql(supabaseConnection));
+}
+else
+{
+    // Development: Use SQLite
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseSqlite(connectionString));
+}
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
@@ -99,4 +118,4 @@ app.MapControllers();
 
 app.Run();
 
-
+public partial class Program { }
