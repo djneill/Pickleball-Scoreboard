@@ -5,7 +5,8 @@
 node_modules
 # dotenv files
 .env
-.env/*
+.env.*
+backend/PickleballApi/appsettings.Development.json
 
 # User-specific files
 *.rsuser
