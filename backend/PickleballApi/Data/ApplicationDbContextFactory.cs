@@ -13,28 +13,35 @@ public class ApplicationDbContextFactory : IDesignTimeDbContextFactory<Applicati
 {
     public ApplicationDbContext CreateDbContext(string[] args)
     {
+        var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
+
         var configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json", optional: false)
+            .AddJsonFile($"appsettings.{environment}.json", optional: true)  // Add this line
             .AddEnvironmentVariables()
             .Build();
 
         var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
 
-        var supabaseConnection = configuration.GetConnectionString("SupabaseConnection");
+        // Use MigrationsConnection for EF migrations (direct connection), fallback to DefaultConnection
+        var migrationsConnection = configuration.GetConnectionString("MigrationsConnection");
         var defaultConnection = configuration.GetConnectionString("DefaultConnection");
+        var sqliteConnection = configuration.GetConnectionString("SqliteConnection");
 
-        if (!string.IsNullOrEmpty(supabaseConnection))
+        // Check if we have a PostgreSQL connection (contains "Host=" or "Server=")
+        var postgresConnection = migrationsConnection ?? defaultConnection;
+        if (!string.IsNullOrEmpty(postgresConnection) &&
+            (postgresConnection.Contains("Host=") || postgresConnection.Contains("Server=")))
         {
-            optionsBuilder.UseNpgsql(supabaseConnection);
+            optionsBuilder.UseNpgsql(postgresConnection);
         }
-        else if (!string.IsNullOrEmpty(defaultConnection))
+        else if (!string.IsNullOrEmpty(sqliteConnection))
         {
-            optionsBuilder.UseSqlite(defaultConnection);
+            optionsBuilder.UseSqlite(sqliteConnection);
         }
         else
         {
-            // Fallback to SQLite
             optionsBuilder.UseSqlite("Data Source=pickleball.db");
         }
 

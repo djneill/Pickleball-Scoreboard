@@ -6,13 +6,14 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Npgsql.EntityFrameworkCore.PostgreSQL;
 using PickleballApi.Data;
 using PickleballApi.Models;
 using PickleballApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var connectionString = builder.Configuration.GetConnectionString("SqliteConnection");
 var supabaseConnection = builder.Configuration.GetConnectionString("SupabaseConnection");
 
 if (builder.Environment.EnvironmentName == "Testing")
