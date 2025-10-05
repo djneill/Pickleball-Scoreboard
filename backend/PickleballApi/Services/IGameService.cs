@@ -14,14 +14,14 @@ public interface IGameService
     /// <summary>
     /// Get the current active game
     /// </summary
-    Task<GameState?> GetCurrentGameAsync();
+    Task<GameState?> GetCurrentGameAsync(string userId);
 
     /// <summary>
     /// Start a new game with the specified type
     /// </summary
     /// <param name="gameType">Singles or Doubles</param>
     /// <returns>The newly created game</returns>
-    Task<GameState> StartNewGameAsync(GameType gametype);
+    Task<GameState> StartNewGameAsync(string userId, GameType gametype);
 
     /// <summary>
     /// Update the score for a team
@@ -31,15 +31,15 @@ public interface IGameService
     /// <returns>Updated game state</returns>
     /// <exception cref="ArgumentException">Thrown when team name is invalid</exception>
     /// <exception cref="InvalidOperationException">Thrown when no active game or game is complete</exception>
-    Task<GameState> UpdateScoreAsync(string team, int change);
+    Task<GameState> UpdateScoreAsync(string userId, string team, int change);
 
     /// <summary>
     /// Get overall game statistics including win counts
     /// </summary>
-    Task<GameStatsResponse> GetGameStatsAsync();
+    Task<GameStatsResponse> GetGameStatsAsync(string userId);
 
     /// <summary>
     /// Clear all match statistics and reset win counts
     /// </summary>
-    Task ClearStatsAsync();
+    Task ClearStatsAsync(string userId);
 }

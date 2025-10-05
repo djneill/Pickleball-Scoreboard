@@ -1,128 +1,227 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using PickleballApi.Data;
 using PickleballApi.Models;
 
-namespace PickleballApi.Services
+namespace PickleballApi.Services;
+
+public class GameService : IGameService
 {
-    public class GameService : IGameService
+    private readonly ApplicationDbContext _context;
+
+    public GameService(ApplicationDbContext context)
     {
-        private GameState? _currentGame;
-        private readonly List<GameState> _gameHistory = new();
+        _context = context;
+    }
 
-        public Task<GameState?> GetCurrentGameAsync()
+    public async Task<GameState?> GetCurrentGameAsync(string userId)
+    {
+        var currentGame = await _context.Games
+            .Where(g => g.UserId == userId && !g.IsComplete)
+            .OrderByDescending(g => g.CreatedAt)
+            .FirstOrDefaultAsync();
+
+        if (currentGame == null)
         {
-            return Task.FromResult(_currentGame);
+            return null;
         }
 
-        public Task<GameState> StartNewGameAsync(GameType gametype)
-        {
-            if (_currentGame != null && !_currentGame.IsGameComplete)
-            {
-                _currentGame.IsGameComplete = true;
-                _currentGame.CompletedAt = DateTime.UtcNow;
-            }
+        // Get stats for this user
+        var stats = await GetStatsForUser(userId);
 
-            _currentGame = new GameState
-            {
-                GameType = gametype,
-                HomeScore = 0,
-                AwayScore = 0,
-                HomeWins = _gameHistory.Count(g => g.HomeScore > g.AwayScore),
-                AwayWins = _gameHistory.Count(g => g.AwayScore > g.HomeScore),
-                IsGameComplete = false
-            };
-            return Task.FromResult(_currentGame);
+        return new GameState
+        {
+            GameType = currentGame.GameType,
+            HomeScore = currentGame.HomeScore,
+            AwayScore = currentGame.AwayScore,
+            HomeWins = stats.HomeWins,
+            AwayWins = stats.AwayWins,
+            IsGameComplete = currentGame.IsComplete,
+            CompletedAt = currentGame.CompletedAt
+        };
+    }
+
+    public async Task<GameState> StartNewGameAsync(string userId, GameType gameType)
+    {
+        // Mark any existing incomplete game as complete
+        var existingGame = await _context.Games
+            .Where(g => g.UserId == userId && !g.IsComplete)
+            .FirstOrDefaultAsync();
+
+        if (existingGame != null)
+        {
+            existingGame.IsComplete = true;
+            existingGame.CompletedAt = DateTime.UtcNow;
         }
 
-        public Task<GameState> UpdateScoreAsync(string team, int change)
+        // Get current stats
+        var stats = await GetStatsForUser(userId);
+
+        // Create new game
+        var newGame = new Game
         {
-            if (_currentGame == null)
-            {
-                throw new InvalidOperationException("No active game found. Start a new game first.");
-            }
-            if (_currentGame.IsGameComplete)
-            {
-                throw new InvalidOperationException("Cannot update score - game is already complete.");
-            }
-            if (string.IsNullOrWhiteSpace(team))
-            {
-                throw new ArgumentException("Team cannot be empty", nameof(team));
-            }
-            if (change != 1 && change != -1)
-            {
-                throw new ArgumentException("Score change must be +1 or -1", nameof(change));
-            }
+            UserId = userId,
+            GameType = gameType,
+            HomeScore = 0,
+            AwayScore = 0,
+            IsComplete = false,
+            CreatedAt = DateTime.UtcNow
+        };
 
-            switch (team.ToLowerInvariant())
-            {
-                case "home":
-                    _currentGame.HomeScore = Math.Max(0, _currentGame.HomeScore + change);
-                    break;
-                case "away":
-                    _currentGame.AwayScore = Math.Max(0, _currentGame.AwayScore + change);
-                    break;
-                default:
-                    throw new ArgumentException($"Invalid team name: {team}. Must be 'Home' or 'Away'", nameof(team));
-            }
+        _context.Games.Add(newGame);
+        await _context.SaveChangesAsync();
 
-            CheckforWinCondition();
+        return new GameState
+        {
+            GameType = newGame.GameType,
+            HomeScore = newGame.HomeScore,
+            AwayScore = newGame.AwayScore,
+            HomeWins = stats.HomeWins,
+            AwayWins = stats.AwayWins,
+            IsGameComplete = false
+        };
+    }
 
-            return Task.FromResult(_currentGame);
+    public async Task<GameState> UpdateScoreAsync(string userId, string team, int change)
+    {
+        var currentGame = await _context.Games
+            .Where(g => g.UserId == userId && !g.IsComplete)
+            .OrderByDescending(g => g.CreatedAt)
+            .FirstOrDefaultAsync();
+
+        if (currentGame == null)
+        {
+            throw new InvalidOperationException("No active game found. Start a new game first.");
         }
 
-        public Task<GameStatsResponse> GetGameStatsAsync()
+        if (string.IsNullOrWhiteSpace(team))
         {
-            var completedGames = _gameHistory.Where(g => g.IsGameComplete).ToList();
-
-            var stats = new GameStatsResponse
-            {
-                TotalGamesPlayed = completedGames.Count,
-                HomeWins = completedGames.Count(g => g.HomeScore > g.AwayScore),
-                AwayWins = completedGames.Count(g => g.AwayScore > g.HomeScore),
-                CurrentGame = _currentGame
-            };
-
-            return Task.FromResult(stats);
+            throw new ArgumentException("Team cannot be empty", nameof(team));
         }
 
-        private void CheckforWinCondition()
+        if (change != 1 && change != -1)
         {
-            if (_currentGame == null) return;
+            throw new ArgumentException("Score change must be +1 or -1", nameof(change));
+        }
 
-            const int winningScore = 11;
-            const int minLeadToWin = 2;
+        switch (team.ToLowerInvariant())
+        {
+            case "home":
+                currentGame.HomeScore = Math.Max(0, currentGame.HomeScore + change);
+                break;
+            case "away":
+                currentGame.AwayScore = Math.Max(0, currentGame.AwayScore + change);
+                break;
+            default:
+                throw new ArgumentException($"Invalid team name: {team}. Must be 'Home' or 'Away'", nameof(team));
+        }
 
-            var homeScore = _currentGame.HomeScore;
-            var awayScore = _currentGame.AwayScore;
+        // Check for win condition
+        await CheckForWinCondition(userId, currentGame);
 
-            bool homeWins = homeScore >= winningScore && homeScore - awayScore >= minLeadToWin;
-            bool awayWins = awayScore >= winningScore && awayScore - homeScore >= minLeadToWin;
+        await _context.SaveChangesAsync();
 
-            if (homeWins || awayWins)
+        // Get updated stats
+        var stats = await GetStatsForUser(userId);
+
+        return new GameState
+        {
+            GameType = currentGame.GameType,
+            HomeScore = currentGame.HomeScore,
+            AwayScore = currentGame.AwayScore,
+            HomeWins = stats.HomeWins,
+            AwayWins = stats.AwayWins,
+            IsGameComplete = currentGame.IsComplete,
+            CompletedAt = currentGame.CompletedAt
+        };
+    }
+
+    public async Task<GameStatsResponse> GetGameStatsAsync(string userId)
+    {
+        var stats = await GetStatsForUser(userId);
+        var currentGame = await GetCurrentGameAsync(userId);
+
+        return new GameStatsResponse
+        {
+            TotalGamesPlayed = stats.HomeWins + stats.AwayWins,
+            HomeWins = stats.HomeWins,
+            AwayWins = stats.AwayWins,
+            CurrentGame = currentGame
+        };
+    }
+
+    public async Task ClearStatsAsync(string userId)
+    {
+        // Delete all games for this user
+        var userGames = await _context.Games
+            .Where(g => g.UserId == userId)
+            .ToListAsync();
+
+        _context.Games.RemoveRange(userGames);
+
+        // Delete statistics for this user
+        var userStats = await _context.MatchStatistics
+            .Where(s => s.UserId == userId)
+            .ToListAsync();
+
+        _context.MatchStatistics.RemoveRange(userStats);
+
+        await _context.SaveChangesAsync();
+    }
+
+    private async Task CheckForWinCondition(string userId, Game currentGame)
+    {
+        const int winningScore = 11;
+        const int minLeadToWin = 2;
+
+        var homeScore = currentGame.HomeScore;
+        var awayScore = currentGame.AwayScore;
+
+        bool homeWins = homeScore >= winningScore && homeScore - awayScore >= minLeadToWin;
+        bool awayWins = awayScore >= winningScore && awayScore - homeScore >= minLeadToWin;
+
+        if (homeWins || awayWins)
+        {
+            currentGame.IsComplete = true;
+            currentGame.CompletedAt = DateTime.UtcNow;
+
+            // Update or create statistics
+            var stats = await _context.MatchStatistics
+                .FirstOrDefaultAsync(s => s.UserId == userId);
+
+            if (stats == null)
             {
-                _currentGame.IsGameComplete = true;
-                _currentGame.CompletedAt = DateTime.UtcNow;
-
-                if (homeWins)
+                stats = new MatchStatistics
                 {
-                    _currentGame.HomeWins++;
-                }
-                else
-                {
-                    _currentGame.AwayWins++;
-                }
-                _gameHistory.Add(_currentGame);
+                    UserId = userId,
+                    HomeWins = 0,
+                    AwayWins = 0
+                };
+                _context.MatchStatistics.Add(stats);
             }
+
+            if (homeWins)
+            {
+                stats.HomeWins++;
+            }
+            else
+            {
+                stats.AwayWins++;
+            }
+
+            stats.LastUpdated = DateTime.UtcNow;
         }
-        public Task ClearStatsAsync()
+    }
+
+    private async Task<(int HomeWins, int AwayWins)> GetStatsForUser(string userId)
+    {
+        var stats = await _context.MatchStatistics
+            .FirstOrDefaultAsync(s => s.UserId == userId);
+
+        if (stats == null)
         {
-            _gameHistory.Clear();
-
-            _currentGame = null;
-
-            return Task.CompletedTask;
+            return (0, 0);
         }
+
+        return (stats.HomeWins, stats.AwayWins);
     }
 }

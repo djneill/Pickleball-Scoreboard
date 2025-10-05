@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PickleballApi.Models;
 using PickleballApi.Services;
 
 namespace PickleballApi.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class GameController : ControllerBase
@@ -20,13 +23,19 @@ public class GameController : ControllerBase
         _gameService = gameService;
     }
 
+    private string GetCurrentUserId()
+    {
+        return User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? throw new UnauthorizedAccessException("User ID not found in token");
+    }
+
     /// <summary>
     /// Get the current game state
     /// </summary>
     [HttpGet]
     public async Task<ActionResult<GameState>> GetCurrentGame()
     {
-        var game = await _gameService.GetCurrentGameAsync();
+        var userId = GetCurrentUserId();
+        var game = await _gameService.GetCurrentGameAsync(userId);
 
         if (game == null)
         {
@@ -47,10 +56,9 @@ public class GameController : ControllerBase
             return BadRequest("Request body is required");
         }
 
-        var game = await _gameService.StartNewGameAsync(request.GameType);
+        var userId = GetCurrentUserId();
+        var game = await _gameService.StartNewGameAsync(userId, request.GameType);
         return Ok(game);
-        //     return CreatedAtAction(nameof(GetCurrentGame), new { id = game.Id }, game);
-
     }
 
     /// <summary>
@@ -61,7 +69,8 @@ public class GameController : ControllerBase
     {
         try
         {
-            var game = await _gameService.UpdateScoreAsync(request.Team, request.Change);
+            var userId = GetCurrentUserId();
+            var game = await _gameService.UpdateScoreAsync(userId, request.Team, request.Change);
             return Ok(game);
         }
         catch (InvalidOperationException ex)
@@ -80,7 +89,8 @@ public class GameController : ControllerBase
     [HttpGet("stats")]
     public async Task<ActionResult<GameStatsResponse>> GetGameStats()
     {
-        var stats = await _gameService.GetGameStatsAsync();
+        var userId = GetCurrentUserId();
+        var stats = await _gameService.GetGameStatsAsync(userId);
         return Ok(stats);
     }
 
@@ -92,8 +102,9 @@ public class GameController : ControllerBase
     {
         try
         {
-            await _gameService.ClearStatsAsync();
-            var stats = await _gameService.GetGameStatsAsync();
+            var userId = GetCurrentUserId();
+            await _gameService.ClearStatsAsync(userId);
+            var stats = await _gameService.GetGameStatsAsync(userId);
             return Ok(stats);
         }
         catch (Exception ex)
