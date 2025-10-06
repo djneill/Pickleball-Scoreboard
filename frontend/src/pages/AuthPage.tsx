@@ -89,7 +89,7 @@ export default function AuthPage() {
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="bg-gradient-to-r from-green-500 to-blue-500 p-6">
             <h1 className="text-3xl font-bold text-white text-center">
-              🏓 Pickleball Scoreboard
+              Pickleball Scoreboard
             </h1>
             <p className="text-green-50 text-center mt-2">
               Track your games with ease
