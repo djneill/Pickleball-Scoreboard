@@ -88,11 +88,11 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(policy =>
+    options.AddPolicy("AllowFrontend", policy =>
     {
         policy.WithOrigins(
-            "http://localhost:5173",  // Development
-            "https://polite-tree-07cef7510.2.azurestaticapps.net"  // Production
+            "http://localhost:5173",
+            "https://polite-tree-07cef7510.2.azurestaticapps.net"
         )
         .AllowAnyHeader()
         .AllowAnyMethod()
@@ -113,7 +113,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseCors();
+app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
