@@ -116,7 +116,7 @@ if (app.Environment.IsDevelopment())
 app.UseSwaggerUI();
 app.UseSwaggerUI(options =>
 {
-    options.SwaggerEndpoint("/openapi/v1.json", "Pickleball API v1");
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "Pickleball API v1");
 });
 app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
