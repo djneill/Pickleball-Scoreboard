@@ -5,6 +5,7 @@ using PickleballApi.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Google.Apis.Auth;
 
 namespace PickleballApi.Controllers;
 
@@ -48,6 +49,7 @@ public class AuthController : ControllerBase
         {
             Token = token,
             Email = user.Email!,
+            UserId = user.Id,
             DisplayName = user.DisplayName
         });
     }
@@ -72,8 +74,65 @@ public class AuthController : ControllerBase
         {
             Token = token,
             Email = user.Email!,
+            UserId = user.Id,
             DisplayName = user.DisplayName
         });
+    }
+
+    [HttpPost("google")]
+    public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginRequest request)
+    {
+        try
+        {
+            // Verify the Google token
+            var settings = new GoogleJsonWebSignature.ValidationSettings
+            {
+                Audience = new[] { _configuration["Google:ClientId"]! }
+            };
+
+            var payload = await GoogleJsonWebSignature.ValidateAsync(request.Token, settings);
+
+            // Find or create user
+            var user = await _userManager.FindByEmailAsync(payload.Email);
+
+            if (user == null)
+            {
+                // Create new user for Google sign-in
+                user = new ApplicationUser
+                {
+                    UserName = payload.Email,
+                    Email = payload.Email,
+                    DisplayName = payload.Name,
+                    EmailConfirmed = true // Google emails are pre-verified
+                };
+
+                var result = await _userManager.CreateAsync(user);
+
+                if (!result.Succeeded)
+                {
+                    return BadRequest(new { message = "Failed to create user", errors = result.Errors });
+                }
+            }
+
+            // Generate JWT token
+            var token = GenerateJwtToken(user);
+
+            return Ok(new AuthResponse
+            {
+                Token = token,
+                Email = user.Email!,
+                UserId = user.Id,
+                DisplayName = user.DisplayName
+            });
+        }
+        catch (InvalidJwtException)
+        {
+            return Unauthorized(new { message = "Invalid Google token" });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Google authentication failed", error = ex.Message });
+        }
     }
 
     private string GenerateJwtToken(ApplicationUser user)
@@ -105,9 +164,11 @@ public class AuthController : ControllerBase
 
 public record RegisterRequest(string Email, string Password, string? DisplayName);
 public record LoginRequest(string Email, string Password);
+public record GoogleLoginRequest(string Token);
 public record AuthResponse
 {
     public string Token { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
+    public string UserId { get; set; } = string.Empty;
     public string? DisplayName { get; set; }
 }
