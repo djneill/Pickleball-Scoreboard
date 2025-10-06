@@ -1,5 +1,8 @@
 import { render, screen, waitFor } from "@testing-library/react";
+import { BrowserRouter } from "react-router-dom";
+import { vi } from "vitest";
 import PickleballScoreboard from "../ScoreBoard";
+import AuthProvider from "../../contexts/AuthProvider";
 
 // Mock the entire gameApi module
 vi.mock("../../services/api", () => ({
@@ -11,15 +14,46 @@ vi.mock("../../services/api", () => ({
   },
 }));
 
+// Mock axios for AuthProvider
+vi.mock("axios", () => ({
+  default: {
+    post: vi.fn(),
+    get: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn(),
+    interceptors: {
+      request: {
+        use: vi.fn(() => 1),
+        eject: vi.fn(),
+      },
+    },
+  },
+}));
+
+// Mock react-router-dom navigation
+vi.mock("react-router-dom", async () => {
+  const actual = await vi.importActual<typeof import("react-router-dom")>(
+    "react-router-dom"
+  );
+  return {
+    ...actual,
+    useNavigate: () => vi.fn(),
+  };
+});
+
 // Import after mocking
 import { gameApi } from "../../services/api";
-import { vi } from "vitest";
 
 test("shows game type selection when no current game", async () => {
-  // Cast to vi mock function and set return value
   vi.mocked(gameApi.getCurrentGame).mockResolvedValue(null);
 
-  render(<PickleballScoreboard />);
+  render(
+    <BrowserRouter>
+      <AuthProvider>
+        <PickleballScoreboard />
+      </AuthProvider>
+    </BrowserRouter>
+  );
 
   await waitFor(() => {
     expect(screen.getByText("Choose Game Type")).toBeInTheDocument();
@@ -40,7 +74,13 @@ test("shows game interface when game is active", async () => {
 
   vi.mocked(gameApi.getCurrentGame).mockResolvedValue(mockGame);
 
-  render(<PickleballScoreboard />);
+  render(
+    <BrowserRouter>
+      <AuthProvider>
+        <PickleballScoreboard />
+      </AuthProvider>
+    </BrowserRouter>
+  );
 
   await waitFor(() => {
     expect(screen.getByText("Singles Game")).toBeInTheDocument();

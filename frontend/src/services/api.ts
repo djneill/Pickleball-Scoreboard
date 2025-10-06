@@ -30,17 +30,11 @@ export interface GameStatsResponse {
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
-const apiClient = axios.create({
-  baseURL: `${API_BASE_URL}/api`,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-
+// Option 1: Use axios directly (recommended - simpler)
 export const gameApi = {
   getCurrentGame: async (): Promise<GameState | null> => {
     try {
-      const response = await apiClient.get<GameState>("/game");
+      const response = await axios.get<GameState>(`${API_BASE_URL}/game`);
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 404) {
@@ -51,9 +45,8 @@ export const gameApi = {
   },
 
   startNewGame: async (gameType: "Singles" | "Doubles"): Promise<GameState> => {
-    // Debug log
     console.log("Sending request:", { gameType });
-    const response = await apiClient.post<GameState>("/game/new", {
+    const response = await axios.post<GameState>(`${API_BASE_URL}/game/new`, {
       gameType: gameType,
     });
     return response.data;
@@ -63,7 +56,7 @@ export const gameApi = {
     team: "Home" | "Away",
     change: 1 | -1
   ): Promise<GameState> => {
-    const response = await apiClient.put<GameState>("/game/score", {
+    const response = await axios.put<GameState>(`${API_BASE_URL}/game/score`, {
       team,
       change,
     });
@@ -71,12 +64,16 @@ export const gameApi = {
   },
 
   getGameStats: async (): Promise<GameStatsResponse> => {
-    const response = await apiClient.get<GameStatsResponse>("/game/stats");
+    const response = await axios.get<GameStatsResponse>(
+      `${API_BASE_URL}/game/stats`
+    );
     return response.data;
   },
 
   clearStats: async (): Promise<GameStatsResponse> => {
-    const response = await apiClient.delete<GameStatsResponse>("/game/stats");
+    const response = await axios.delete<GameStatsResponse>(
+      `${API_BASE_URL}/game/stats`
+    );
     return response.data;
   },
 };

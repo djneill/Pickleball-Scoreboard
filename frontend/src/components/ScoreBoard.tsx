@@ -7,6 +7,7 @@ import GameTypeSelector from "../components/GameTypeSelector";
 import TeamScore from "../components/TeamScore";
 import GameInfo from "../components/GameInfo";
 import MatchStats from "../components/MatchStats";
+import LogoutButton from "../components/LogoutButton";
 
 export default function PickleballScoreboard() {
   const [game, setGame] = useState<GameState | null>(null);
@@ -88,7 +89,6 @@ export default function PickleballScoreboard() {
       style={backgroundStyle}
     >
       <div className="max-w-md mx-auto">
-        {/* Header */}
         {!game && (
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-white">
@@ -99,19 +99,23 @@ export default function PickleballScoreboard() {
 
         <ErrorMessage error={error} onDismiss={() => setError(null)} />
         <LoadingSpinner isLoading={isLoading} />
+
         {/* Game Type Selection */}
         {!game && !isLoading && (
-          <GameTypeSelector
-            onSelectGameType={startNewGame}
-            isLoading={isLoading}
-          />
+          <>
+            <GameTypeSelector
+              onSelectGameType={startNewGame}
+              isLoading={isLoading}
+            />
+            <LogoutButton />
+          </>
         )}
+
         {/* Active Game */}
         {game && (
           <>
             <GameInfo game={game} />
 
-            {/* Scoreboard */}
             <div className="bg-white/50 backdrop-blur-sm rounded-xl p-2 mb-6 shadow-lg">
               <div className="grid grid-cols-2 gap-6">
                 <TeamScore
@@ -135,8 +139,7 @@ export default function PickleballScoreboard() {
 
             <MatchStats game={game} onClearStats={clearAllStats} />
 
-            {/* New Game Button */}
-            <div className="text-center">
+            <div className="text-center mb-4">
               <button
                 onClick={() => setGame(null)}
                 className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-8 rounded-lg transition-all duration-200 transform hover:scale-105"
@@ -144,6 +147,8 @@ export default function PickleballScoreboard() {
                 New Game
               </button>
             </div>
+
+            <LogoutButton />
           </>
         )}
       </div>
