@@ -18,6 +18,11 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("SqliteConnection");
 var supabaseConnection = builder.Configuration.GetConnectionString("SupabaseConnection");
 
+// DEBUG
+Console.WriteLine($"Environment: {builder.Environment.EnvironmentName}");
+Console.WriteLine($"Supabase connection exists: {!string.IsNullOrEmpty(supabaseConnection)}");
+Console.WriteLine($"Using Production DB: {builder.Environment.IsProduction() && !string.IsNullOrEmpty(supabaseConnection)}");
+
 if (builder.Environment.EnvironmentName == "Testing")
 {
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -112,12 +117,6 @@ if (app.Environment.IsDevelopment())
 });
     // app.UseCors("Development");
 }
-
-app.UseSwaggerUI();
-app.UseSwaggerUI(options =>
-{
-    options.SwaggerEndpoint("/swagger/v1/swagger.json", "Pickleball API v1");
-});
 app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
 app.UseAuthentication();
