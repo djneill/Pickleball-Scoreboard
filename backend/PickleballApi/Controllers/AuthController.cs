@@ -87,7 +87,7 @@ public class AuthController : ControllerBase
             // Verify the Google token
             var settings = new GoogleJsonWebSignature.ValidationSettings
             {
-                Audience = new[] { _configuration["Google:ClientId"]! }
+                Audience = new[] { _configuration["Authentication:Google:ClientId"]! }
             };
 
             var payload = await GoogleJsonWebSignature.ValidateAsync(request.Token, settings);

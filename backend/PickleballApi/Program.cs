@@ -18,11 +18,6 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("SqliteConnection");
 var supabaseConnection = builder.Configuration.GetConnectionString("SupabaseConnection");
 
-// DEBUG
-Console.WriteLine($"Environment: {builder.Environment.EnvironmentName}");
-Console.WriteLine($"Supabase connection exists: {!string.IsNullOrEmpty(supabaseConnection)}");
-Console.WriteLine($"Using Production DB: {builder.Environment.IsProduction() && !string.IsNullOrEmpty(supabaseConnection)}");
-
 if (builder.Environment.EnvironmentName == "Testing")
 {
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
