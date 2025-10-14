@@ -73,9 +73,9 @@ export default function AuthPage() {
   };
 
   const backgroundStyle = {
-    backgroundImage: 'url("/colorfulPb.png")',
-    backgroundSize: "contain",
-    backgroundRepeat: "repeat",
+    backgroundImage: 'url("/colorful2.png")',
+    backgroundSize: "cover",
+    backgroundRepeat: "no-repeat",
     backgroundColor: "#178BFB",
     backgroundPosition: "center",
   };

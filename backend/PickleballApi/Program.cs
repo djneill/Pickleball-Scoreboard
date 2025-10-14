@@ -66,12 +66,18 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = jwtSettings["Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
     };
-})
-.AddGoogle(options =>
+});
+
+var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
+if (!string.IsNullOrEmpty(googleClientId))
 {
-    options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? "";
+    builder.Services.AddAuthentication().AddGoogle(options =>
+{
+    options.ClientId = googleClientId;
     options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? "";
 });
+}
+
 
 builder.Services.AddAuthorization();
 

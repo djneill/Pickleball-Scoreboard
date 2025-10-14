@@ -76,7 +76,7 @@ export default function PickleballScoreboard() {
 
   const backgroundStyle = {
     backgroundImage: game
-      ? 'url("/PBcourtBackground.png")'
+      ? 'url("/splashBG.jpg")'
       : 'url("/pickle-ball-landing.png")',
     backgroundRepeat: "no-repeat",
     backgroundColor: "#178BFB",
