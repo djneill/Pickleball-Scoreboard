@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import type { CredentialResponse } from "@react-oauth/google";
 import { useAuth } from "../hooks/useAuth";
-import DebugEnv from "../components/DebugEnv";
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -86,7 +85,6 @@ export default function AuthPage() {
       className="min-h-screen bg-gradient-to-br from-green-500 via-blue-500 to-purple-500 flex items-center justify-center p-4"
       style={backgroundStyle}
     >
-      <DebugEnv />
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="bg-gradient-to-r from-green-500 to-blue-500 p-6">
