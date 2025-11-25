@@ -1,4 +1,4 @@
-# Pickleball Scoreboard
+# Pickleball Scoreboard 
 
 A production-ready, full-stack pickleball web application built with enterprise-grade architecture and modern development practices.
 
