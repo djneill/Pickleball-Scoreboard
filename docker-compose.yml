@@ -6,20 +6,22 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Production
       - ConnectionStrings__DefaultConnection=${ConnectionStrings__DefaultConnection}
+      - ConnectionStrings__SupabaseConnection=${ConnectionStrings__SupabaseConnection}
       - JwtSettings__SecretKey=${JwtSettings__SecretKey}
       - JwtSettings__Issuer=PickleballScoreboard
       - JwtSettings__Audience=PickleballScoreboardApp
       - JwtSettings__ExpirationMinutes=60
-      - Google__ClientId=${Google__ClientId}
+      - Authentication__Google__ClientId=${Google__ClientId}
+      - Authentication__Google__ClientSecret=${Google__ClientSecret}
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        - VITE_API_URL=http://localhost:8080/api
+        - VITE_API_URL=${VITE_API_URL:-http://localhost:8080/api}
         - VITE_GOOGLE_CLIENT_ID=${VITE_GOOGLE_CLIENT_ID}
     ports:
       - "3000:80"
