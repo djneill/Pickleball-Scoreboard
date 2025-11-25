@@ -23,17 +23,29 @@ if (builder.Environment.EnvironmentName == "Testing")
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.UseInMemoryDatabase("TestDatabase"));
 }
-else if (builder.Environment.IsProduction() && !string.IsNullOrEmpty(supabaseConnection))
+else if (builder.Environment.IsProduction())
 {
-    // Production: Use Supabase PostgreSQL
-    builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseNpgsql(supabaseConnection));
+    if (!string.IsNullOrEmpty(supabaseConnection))
+    {
+        // Production: Use Supabase PostgreSQL
+        Console.WriteLine("Using Supabase PostgreSQL database");
+        builder.Services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseNpgsql(supabaseConnection));
+    }
+    else
+    {
+        // Fallback to SQLite if Supabase not configured
+        Console.WriteLine("WARNING: Supabase connection not found. Falling back to SQLite.");
+        builder.Services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseSqlite(connectionString ?? "Data Source=pickleball.db"));
+    }
 }
 else
 {
     // Development: Use SQLite
+    Console.WriteLine("Using SQLite database for development");
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseSqlite(connectionString));
+        options.UseSqlite(connectionString ?? "Data Source=pickleball.db"));
 }
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -53,7 +65,14 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 builder.Services.AddScoped<IPasswordHasher<ApplicationUser>, OptimizedPasswordHasher>();
 
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey not configured");
+var secretKey = jwtSettings["SecretKey"];
+
+// Allow the app to start even if JWT secret is missing (for debugging)
+if (string.IsNullOrEmpty(secretKey))
+{
+    Console.WriteLine("WARNING: JWT SecretKey not configured. Using temporary key.");
+    secretKey = "TemporaryKeyForDebugging-ChangeInProduction-AtLeast32Characters!!";
+}
 
 builder.Services.AddAuthentication(options =>
 {
@@ -76,11 +95,16 @@ builder.Services.AddAuthentication(options =>
 var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
 if (!string.IsNullOrEmpty(googleClientId))
 {
+    Console.WriteLine($"Google OAuth configured with ClientId: {googleClientId[..20]}...");
     builder.Services.AddAuthentication().AddGoogle(options =>
+    {
+        options.ClientId = googleClientId;
+        options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? "";
+    });
+}
+else
 {
-    options.ClientId = googleClientId;
-    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? "";
-});
+    Console.WriteLine("WARNING: Google OAuth ClientId not configured. Google login will not work.");
 }
 
 
@@ -114,6 +138,12 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+// Log startup configuration
+Console.WriteLine($"=== Application Starting ===");
+Console.WriteLine($"Environment: {app.Environment.EnvironmentName}");
+Console.WriteLine($"CORS Origins: localhost:5173, polite-tree-07cef7510.2.azurestaticapps.net, pickletrack.onrender.com");
+Console.WriteLine($"========================");
 
 if (app.Environment.IsDevelopment())
 {
