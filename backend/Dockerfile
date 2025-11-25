@@ -20,7 +20,16 @@ RUN dotnet publish "PickleballApi.csproj" -c Release -o /app/publish /p:UseAppHo
 # Final stage/image
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 WORKDIR /app
+
+# Create a non-root user for security
+RUN addgroup --system --gid 1000 appuser \
+    && adduser --system --uid 1000 --ingroup appuser appuser
+
 COPY --from=publish /app/publish .
+
+# Switch to non-root user
+USER appuser
+
 EXPOSE 8080
 ENV ASPNETCORE_URLS=http://+:8080
 ENTRYPOINT ["dotnet", "PickleballApi.dll"]

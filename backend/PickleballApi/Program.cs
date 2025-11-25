@@ -104,7 +104,8 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(
             "http://localhost:5173",
-            "https://polite-tree-07cef7510.2.azurestaticapps.net"
+            "https://polite-tree-07cef7510.2.azurestaticapps.net",
+            "https://pickletrack.onrender.com"
         )
         .AllowAnyHeader()
         .AllowAnyMethod()
