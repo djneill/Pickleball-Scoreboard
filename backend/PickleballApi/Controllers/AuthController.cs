@@ -5,6 +5,7 @@ using PickleballApi.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using Google.Apis.Auth;
 
@@ -221,10 +222,36 @@ public class AuthController : ControllerBase
     }
 }
 
-public record RegisterRequest(string Email, string Password, string? DisplayName);
-public record LoginRequest(string Email, string Password);
-public record GoogleLoginRequest(string Token);
-public record AuthResponse
+public class RegisterRequest
+{
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; } = string.Empty;
+
+    [Required]
+    [MinLength(6)]
+    public string Password { get; set; } = string.Empty;
+
+    public string? DisplayName { get; set; }
+}
+
+public class LoginRequest
+{
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; } = string.Empty;
+
+    [Required]
+    public string Password { get; set; } = string.Empty;
+}
+
+public class GoogleLoginRequest
+{
+    [Required]
+    public string Token { get; set; } = string.Empty;
+}
+
+public class AuthResponse
 {
     public string Token { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
