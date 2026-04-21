@@ -17,7 +17,7 @@ export default function TeamScore({
 }: TeamScoreProps) {
   return (
     <div className="text-center">
-      <h3 className="text-lg font-semibold text-gray-700 mb-2">
+      <h3 className="text-lg font-semibold text-white tracking-wider mb-2 drop-shadow-md">
         {teamName.toUpperCase()}
       </h3>
       <div
